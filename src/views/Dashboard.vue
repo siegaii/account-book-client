@@ -26,8 +26,8 @@
     </div>
 
     <el-dialog title="添加账单" :visible.sync="billFormVisible" :click-modal="false" width="400px">
-      <el-form :model="billForm" :rules="billRules" ref="ruleForm" label-width="100px">
-        <el-form-item label="分类:" prop="type">
+      <el-form :model="billForm" :rules="billRules" ref="billForm" label-width="100px">
+        <el-form-item label="类型:" prop="type">
           <el-radio v-model="billForm.type" label="1">收入</el-radio>
           <el-radio v-model="billForm.type" label="0">支出</el-radio>
         </el-form-item>
@@ -42,8 +42,8 @@
           >
           </el-date-picker>
         </el-form-item>
-        <el-form-item label="类型:" prop="type">
-          <el-select v-model="billForm.category" placeholder="请选择账单类型" style="width: 222px">
+        <el-form-item label="分类:" prop="category">
+          <el-select v-model="billForm.category" placeholder="请选择账单分类" style="width: 222px">
             <el-option v-for="item in category" :key="item.id" :label="item.name" :value="item.id">
             </el-option>
           </el-select>
@@ -60,34 +60,50 @@
       </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="billFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="billFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="submitBillForm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getBill } from 'api/bill.api';
+import { getBill, postBill } from 'api/bill.api';
 import { getCategory } from 'api/category.api';
 
 export default {
   name: 'Dashboard',
   components: {},
   data() {
+    const validateAmount = (rule, value, callback) => {
+      const float = value.toString().split('.')[1];
+      if (float && float.length > 2) {
+        callback(new Error('保留两位小数'));
+      } else {
+        callback();
+      }
+    };
     return {
       bills: [],
       category: [],
       billFormVisible: false,
       billForm: {
         time: '',
-        type: '1',
+        type: '',
         category: '',
         amount: ''
       },
       billsQuery: {
         mouth: 1
       },
-      billRules: {},
+      billRules: {
+        time: [{ type: 'date', required: true, message: '请选择账单时间', trigger: 'change' }],
+        type: [{ required: true, message: '请选择账单分类', trigger: 'change' }],
+        category: [{ required: true, message: '请选择账单类型', trigger: 'change' }],
+        amount: [
+          { required: true, message: '请输入账单金额', trigger: 'change' },
+          { validator: validateAmount, trigger: 'change' }
+        ]
+      },
       months: [
         '一月',
         '二月',
@@ -114,7 +130,25 @@ export default {
     },
     async getCategory() {
       this.category = await getCategory();
+    },
+    submitBillForm() {
+      this.$refs['billForm'].validate(async (valid) => {
+        if (valid) {
+          try {
+            await postBill(this.billForm);
+            this.$message.success('添加账单成功');
+          } catch (err) {
+            this.$message.error('添加账单失败');
+          }
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
     }
+    // resetForm(formName) {
+    //   this.$refs[formName].resetFields();
+    // }
   }
 };
 </script>

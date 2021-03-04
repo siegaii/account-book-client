@@ -8,7 +8,8 @@ import {
   FormItem,
   DatePicker,
   Radio,
-  Input
+  Input,
+  Message
 } from 'element-ui';
 
 export function registerElement() {
@@ -22,3 +23,5 @@ export function registerElement() {
     .use(Form)
     .use(FormItem);
 }
+
+Vue.prototype.$message = Message;

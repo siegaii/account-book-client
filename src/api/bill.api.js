@@ -9,3 +9,11 @@ export const getBill = (params) =>
     url: `${URL}/bill`,
     params
   });
+
+// 添加账单
+export const postBill = (data) =>
+  request({
+    method: 'post',
+    url: `${URL}/bill`,
+    data
+  });

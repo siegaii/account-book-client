@@ -9,12 +9,13 @@ module.exports = {
       .set('@', resolve('./src'))
       .set('components', resolve('./src/components'))
       .set('utils', resolve('./src/utils'))
+      .set('assets', resolve('./src/assets'))
       .set('api', resolve('./src/api'));
   },
   devServer: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8888',
+        target: 'http://127.0.0.1:9999',
         changeOrigin: true
       }
     }

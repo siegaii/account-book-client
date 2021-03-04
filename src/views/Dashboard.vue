@@ -4,18 +4,24 @@
     <div class="flex-h-v-c">
       <div class="filter-btns ac-card">
         <span>按月筛选：</span>
-        <el-select v-model="billsQuery.time">
+        <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 100px">
           <el-option v-for="(item, index) in months" :key="index" :label="item" :value="index + 1">
           </el-option>
         </el-select>
-        <el-button class="m-l-15" size="medium" type="primary" @click="billFormVisible = true"
-          >添加</el-button
-        >
+        <el-button class="m-l-15" size="medium" type="primary" @click="billFormVisible = true">
+          添加
+        </el-button>
+      </div>
+    </div>
+    <div class="flex-h-v-c">
+      <div class="statistical m-t-10 ac-card">
+        <strong class="m-r-30">{{ months[billsQuery.mouth - 1] }}统计</strong>
+        <span class="m-r-15">收入：{{ this.incomeStatistics }}</span>
+        <span>支出：{{ this.spendingStatistics }}</span>
       </div>
     </div>
     <div class="bill-wrap flex-h-c m-t-10">
       <ul class="bill-list ac-card">
-        <h2>2019年账单：</h2>
         <li v-for="(item, index) in bills" :key="index">
           <span>时间：{{ item.time | timestampToString }}；</span>
           <span>类型：{{ item.type === '1' ? '收入' : '支出' }}；</span>
@@ -120,6 +126,26 @@ export default {
       ]
     };
   },
+  computed: {
+    incomeStatistics() {
+      let sum = 0;
+      this.bills.map((item) => {
+        if (item.type === '1') {
+          sum += Number(item.amount);
+        }
+      });
+      return sum;
+    },
+    spendingStatistics() {
+      let sum = 0;
+      this.bills.map((item) => {
+        if (item.type === '0') {
+          sum += Number(item.amount);
+        }
+      });
+      return sum;
+    }
+  },
   created() {
     this.getBill();
     this.getCategory();
@@ -137,6 +163,7 @@ export default {
           try {
             await postBill(this.billForm);
             this.$message.success('添加账单成功');
+            this.getBill();
           } catch (err) {
             this.$message.error('添加账单失败');
           }

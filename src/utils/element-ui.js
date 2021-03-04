@@ -9,6 +9,8 @@ import {
   DatePicker,
   Radio,
   Input,
+  Table,
+  TableColumn,
   Message
 } from 'element-ui';
 
@@ -20,6 +22,8 @@ export function registerElement() {
     .use(Radio)
     .use(Select)
     .use(Option)
+    .use(Table)
+    .use(TableColumn)
     .use(Form)
     .use(FormItem);
 }

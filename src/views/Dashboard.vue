@@ -2,33 +2,65 @@
   <div class="dashboard">
     <h1 class="title text-center">简易记账本</h1>
     <div class="flex-h-v-c">
-      <div class="filter-btns ac-card">
-        <span>按月筛选：</span>
-        <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 100px">
+      <div class="filter-btns ac-card ">
+        <span>月份：</span>
+        <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 150px">
           <el-option v-for="(item, index) in months" :key="index" :label="item" :value="index + 1">
           </el-option>
         </el-select>
-        <el-button class="m-l-15" size="medium" type="primary" @click="billFormVisible = true">
+        <span class="m-l-15">分类：</span>
+        <el-select
+          v-model="billsQuery.category"
+          @change="getBill"
+          class="m-r-15"
+          style="width: 160px"
+        >
+          <el-option v-for="item in category" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
+
+        <span>排序：</span>
+        <el-select
+          v-model="billsQuery.amountSort"
+          @change="getBill"
+          class="m-r-15"
+          style="width: 180px"
+          placeholder="对金额排序"
+        >
+          <el-option label="还原" :value="0" />
+          <el-option label="升序" :value="1" />
+          <el-option label="降序" :value="-1" />
+        </el-select>
+        <el-button size="medium" type="primary" @click="billFormVisible = true">
           添加
         </el-button>
       </div>
     </div>
     <div class="flex-h-v-c">
       <div class="statistical m-t-10 ac-card">
-        <strong class="m-r-30">{{ months[billsQuery.mouth - 1] }}统计</strong>
+        <strong class="m-r-30">
+          {{ months[billsQuery.mouth - 1] }}{{ getCategoryName(billsQuery.category) }}统计
+        </strong>
         <span class="m-r-15">收入：{{ this.incomeStatistics }}</span>
         <span>支出：{{ this.spendingStatistics }}</span>
       </div>
     </div>
     <div class="bill-wrap flex-h-c m-t-10">
-      <ul class="bill-list ac-card">
-        <li v-for="(item, index) in bills" :key="index">
-          <span>时间：{{ item.time | timestampToString }}；</span>
-          <span>类型：{{ item.type === '1' ? '收入' : '支出' }}；</span>
-          <span>分类：{{ item.category }}；</span>
-          <span>金额：{{ item.amount }}</span>
-        </li>
-      </ul>
+      <div class="bill-list ac-card">
+        <el-table :data="bills" style="width: 100%">
+          <el-table-column prop="time" label="时间" width="width">
+            <template slot-scope="scope">
+              {{ scope.row.time | timestampToString }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="type" label="类型" width="width">
+            <template slot-scope="scope">
+              {{ scope.row.type === '1' ? '收入' : '支出' }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="category" label="分类" width="width"> </el-table-column>
+          <el-table-column prop="amount" label="金额" width="width"> </el-table-column>
+        </el-table>
+      </div>
     </div>
 
     <el-dialog title="添加账单" :visible.sync="billFormVisible" :click-modal="false" width="400px">
@@ -96,10 +128,12 @@ export default {
         time: '',
         type: '',
         category: '',
-        amount: ''
+        amount: '',
+        amountSort: 0 // 0 不排序，1 升序， 2 降序
       },
       billsQuery: {
-        mouth: 1
+        mouth: 1,
+        category: ''
       },
       billRules: {
         time: [{ type: 'date', required: true, message: '请选择账单时间', trigger: 'change' }],
@@ -156,6 +190,10 @@ export default {
     },
     async getCategory() {
       this.category = await getCategory();
+    },
+    getCategoryName(id) {
+      const category = this.category.find((item) => item.id === id);
+      return category ? category.name : '';
     },
     submitBillForm() {
       this.$refs['billForm'].validate(async (valid) => {

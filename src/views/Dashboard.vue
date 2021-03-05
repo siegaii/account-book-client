@@ -8,25 +8,30 @@
           class="m-r-15"
           v-model="billsQuery.year"
           format="yyyy"
+          value-format="timestamp"
           type="year"
           placeholder="请选择年份"
           style="width: 150px"
-          @change="getBill"
         />
-        <template v-if="billsQuery.year">
-          <span>月份：</span>
-          <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 150px">
-            <el-option
-              v-for="(item, index) in months"
-              :key="index"
-              :label="item"
-              :value="index + 1"
-            />
-          </el-select>
-        </template>
+        <span>月份：</span>
+        <el-select
+          v-model="billsQuery.month"
+          @change="getBill"
+          :clearable="true"
+          :disabled="!billsQuery.year"
+          style="width: 150px"
+        >
+          <el-option
+            v-for="(item, index) in months"
+            :key="index"
+            :label="item"
+            :value="index + 1"
+          />
+        </el-select>
         <span class="m-l-15">分类：</span>
         <el-select
           v-model="billsQuery.category"
+          :clearable="true"
           @change="getBill"
           class="m-r-15"
           style="width: 160px"
@@ -54,7 +59,7 @@
     <div class="flex-h-v-c">
       <div class="statistical m-t-10 ac-card">
         <strong class="m-r-30">
-          {{ months[billsQuery.mouth - 1] }}{{ getCategoryName(billsQuery.category) }}统计
+          {{ months[billsQuery.month - 1] }}{{ getCategoryName(billsQuery.category) }}统计
         </strong>
         <span class="m-r-15">收入：{{ this.incomeStatistics }}</span>
         <span>支出：{{ this.spendingStatistics }}</span>
@@ -73,7 +78,11 @@
               {{ scope.row.type === '1' ? '收入' : '支出' }}
             </template>
           </el-table-column>
-          <el-table-column prop="category" label="分类" width="width"> </el-table-column>
+          <el-table-column prop="category" label="分类" width="width">
+            <template slot-scope="scope">
+              {{ scope.row.category[0].name }}
+            </template>
+          </el-table-column>
           <el-table-column prop="amount" label="金额" width="width"> </el-table-column>
         </el-table>
       </div>
@@ -154,7 +163,7 @@ export default {
       },
       billsQuery: {
         year: 1546300800000,
-        mouth: '',
+        month: '',
         category: '',
         amountSort: 0 // 0 不排序，1 升序， 2 降序
       },

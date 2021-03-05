@@ -3,11 +3,27 @@
     <h1 class="title text-center">简易记账本</h1>
     <div class="flex-h-v-c">
       <div class="filter-btns ac-card ">
-        <span>月份：</span>
-        <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 150px">
-          <el-option v-for="(item, index) in months" :key="index" :label="item" :value="index + 1">
-          </el-option>
-        </el-select>
+        <span>年份：</span>
+        <el-date-picker
+          class="m-r-15"
+          v-model="billsQuery.year"
+          format="yyyy"
+          type="year"
+          placeholder="请选择年份"
+          style="width: 150px"
+          @change="getBill"
+        />
+        <template v-if="billsQuery.year">
+          <span>月份：</span>
+          <el-select v-model="billsQuery.mouth" @change="getBill" style="width: 150px">
+            <el-option
+              v-for="(item, index) in months"
+              :key="index"
+              :label="item"
+              :value="index + 1"
+            />
+          </el-select>
+        </template>
         <span class="m-l-15">分类：</span>
         <el-select
           v-model="billsQuery.category"
@@ -26,7 +42,7 @@
           style="width: 180px"
           placeholder="对金额排序"
         >
-          <el-option label="还原" :value="0" />
+          <el-option label="无排序" :value="0" />
           <el-option label="升序" :value="1" />
           <el-option label="降序" :value="-1" />
         </el-select>
@@ -63,7 +79,13 @@
       </div>
     </div>
 
-    <el-dialog title="添加账单" :visible.sync="billFormVisible" :click-modal="false" width="400px">
+    <el-dialog
+      title="添加账单"
+      :visible.sync="billFormVisible"
+      :click-modal="false"
+      @close="resetForm"
+      width="400px"
+    >
       <el-form :model="billForm" :rules="billRules" ref="billForm" label-width="100px">
         <el-form-item label="类型:" prop="type">
           <el-radio v-model="billForm.type" label="1">收入</el-radio>
@@ -128,12 +150,13 @@ export default {
         time: '',
         type: '',
         category: '',
-        amount: '',
-        amountSort: 0 // 0 不排序，1 升序， 2 降序
+        amount: ''
       },
       billsQuery: {
-        mouth: 1,
-        category: ''
+        year: 1546300800000,
+        mouth: '',
+        category: '',
+        amountSort: 0 // 0 不排序，1 升序， 2 降序
       },
       billRules: {
         time: [{ type: 'date', required: true, message: '请选择账单时间', trigger: 'change' }],
@@ -204,16 +227,18 @@ export default {
             this.getBill();
           } catch (err) {
             this.$message.error('添加账单失败');
+          } finally {
+            this.billFormVisible = false;
           }
         } else {
           console.log('error submit!!');
           return false;
         }
       });
+    },
+    resetForm() {
+      this.$refs['billForm'].resetFields();
     }
-    // resetForm(formName) {
-    //   this.$refs[formName].resetFields();
-    // }
   }
 };
 </script>
